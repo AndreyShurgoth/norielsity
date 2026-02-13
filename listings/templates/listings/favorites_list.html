@@ -1,0 +1,46 @@
+{% extends "listings/dashboard_base.html" %}
+
+{% block title %}Обране — NoRielSity{% endblock %}
+
+{% block content %}
+  <div class="panel row">
+    <div>
+      <h2>Обрані оголошення</h2>
+      <p class="muted">Твої збережені оголошення.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    {% if favorites %}
+      <table>
+        <thead>
+          <tr>
+            <th>Назва</th>
+            <th>Ціна</th>
+            <th>Кімнати</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fav in favorites %}
+            <tr>
+              <td>{{ fav.listing.title }}</td>
+              <td>{{ fav.listing.price_per_month }} грн</td>
+              <td>{{ fav.listing.get_rooms_display }}</td>
+              <td class="actions">
+                <a class="btn secondary" href="{% url 'listings:listing_detail' fav.listing.pk %}">Відкрити</a>
+                <form method="post" action="{% url 'listings:favorite_toggle' fav.listing.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'listings:favorites_list' %}">
+                  <button class="btn danger" type="submit">Прибрати</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Поки немає обраних оголошень.</p>
+    {% endif %}
+  </div>
+{% endblock %}

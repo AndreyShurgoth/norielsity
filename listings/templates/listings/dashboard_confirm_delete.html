@@ -1,0 +1,17 @@
+{% extends "listings/dashboard_base.html" %}
+
+{% block title %}Видалити оголошення{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <h2>Видалити оголошення</h2>
+    <p>Ти впевнений, що хочеш видалити оголошення "{{ listing.title }}"?</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="actions">
+        <button class="btn danger" type="submit">Так, видалити</button>
+        <a class="btn secondary" href="{% url 'listings:dashboard_list' %}">Скасувати</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

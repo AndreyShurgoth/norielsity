@@ -1,0 +1,248 @@
+﻿{% extends "listings/base.html" %}
+
+{% block title %}Оголошення — NoRielSity{% endblock %}
+
+{% block content %}
+  <style>
+    .filters {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      background: linear-gradient(180deg, #fff8f0 0%, #f4eee3 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 30px rgba(27, 22, 16, 0.08);
+    }
+    .filters label {
+      display: block;
+      font-size: 13px;
+      color: #6b6258;
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+    }
+    .filters input,
+    .filters select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-sizing: border-box;
+      color: var(--ink);
+    }
+    .filters .actions {
+      display: grid;
+      gap: 8px;
+      align-items: end;
+    }
+    .filters .btn {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      color: #f8f5ef;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+    }
+    .filters .btn.secondary {
+      background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      color: #f8f5ef;
+      border: none;
+    }
+    :root[data-theme="dark"] .filters {
+      background: linear-gradient(180deg, #0f1a1e 0%, #0b1416 100%);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+    }
+    :root[data-theme="dark"] .filters label {
+      color: var(--muted);
+    }
+    .active-filters {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .filter-chip {
+      text-decoration: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: var(--ink);
+    }
+    .filter-chip:hover {
+      background: var(--card);
+    }
+    .active-filters .btn.secondary {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .fav-btn-small {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      color: #f8f5ef;
+      font-size: 18px;
+      text-decoration: none;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+    }
+    :root[data-theme="dark"] .filters .btn,
+    :root[data-theme="dark"] .filters .btn.secondary,
+    :root[data-theme="dark"] .fav-btn-small {
+      background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+      color: #05221f;
+    }
+  </style>
+
+  <form method="get" class="filters" style="margin-bottom: 18px;">
+    <div>
+      <label for="min_price">Ціна від</label>
+      <input id="min_price" name="min_price" type="number" value="{{ filters.min_price }}" />
+    </div>
+    <div>
+      <label for="max_price">Ціна до</label>
+      <input id="max_price" name="max_price" type="number" value="{{ filters.max_price }}" />
+    </div>
+    <div>
+      <label for="rooms">Кімнати</label>
+      <select id="rooms" name="rooms">
+        <option value="">Будь-які</option>
+        {% for value, label in rooms_choices %}
+          <option value="{{ value }}"{% if filters.rooms == value %} selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="floor">Поверх</label>
+      <input id="floor" name="floor" type="number" value="{{ filters.floor }}" />
+    </div>
+    <div>
+      <label for="pets">Тварини</label>
+      <select id="pets" name="pets">
+        <option value="">Будь-які</option>
+        {% for value, label in pets_choices %}
+          <option value="{{ value }}"{% if filters.pets == value %} selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="heating">Опалення</label>
+      <select id="heating" name="heating">
+        <option value="">Будь-яке</option>
+        {% for value, label in heating_choices %}
+          <option value="{{ value }}"{% if filters.heating == value %} selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">Фільтрувати</button>
+    </div>
+  </form>
+
+  {% if filters.min_price or filters.max_price or filters.rooms or filters.floor or filters.pets or filters.heating %}
+    <div class="active-filters">
+      {% if filters.min_price %}
+        <a class="filter-chip" href="?{{ qs_without_min_price }}">Ціна від: {{ filters.min_price }} ✕</a>
+      {% endif %}
+      {% if filters.max_price %}
+        <a class="filter-chip" href="?{{ qs_without_max_price }}">Ціна до: {{ filters.max_price }} ✕</a>
+      {% endif %}
+      {% if filters.rooms %}
+        <a class="filter-chip" href="?{{ qs_without_rooms }}">Кімнати: {{ rooms_label }} ✕</a>
+      {% endif %}
+      {% if filters.floor %}
+        <a class="filter-chip" href="?{{ qs_without_floor }}">Поверх: {{ filters.floor }} ✕</a>
+      {% endif %}
+      {% if filters.pets %}
+        <a class="filter-chip" href="?{{ qs_without_pets }}">Тварини: {{ pets_label }} ✕</a>
+      {% endif %}
+      {% if filters.heating %}
+        <a class="filter-chip" href="?{{ qs_without_heating }}">Опалення: {{ heating_label }} ✕</a>
+      {% endif %}
+      <a class="btn secondary" href="{% url 'listings:listing_list' %}">Скинути</a>
+    </div>
+  {% endif %}
+
+  {% if listings %}
+    <div class="grid" style="margin-top: 12px;">
+      {% for listing in listings %}
+        <article class="card">
+          {% if listing.photo %}
+            <img
+              src="{{ listing.photo.url }}"
+              alt="{{ listing.title }}"
+              style="width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;"
+            />
+          {% elif listing.images.first %}
+            <img
+              src="{{ listing.images.first.image.url }}"
+              alt="{{ listing.title }}"
+              style="width: 100%; height: 160px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;"
+            />
+          {% endif %}
+          <div class="card-title">
+            <h2 style="margin: 0;">
+              <a href="{% url 'listings:listing_detail' listing.pk %}">
+                {{ listing.title }}
+              </a>
+            </h2>
+            {% if request.user.is_authenticated %}
+              <form method="post" action="{% url 'listings:favorite_toggle' listing.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                <button type="submit" class="fav-btn-small" aria-label="Обране">
+                  {% if listing.pk in favorite_ids %}♥{% else %}♡{% endif %}
+                </button>
+              </form>
+            {% else %}
+              <a class="fav-btn-small" href="{% url 'login' %}?next={{ request.get_full_path }}" aria-label="Обране">♡</a>
+            {% endif %}
+          </div>
+          <p class="price">{{ listing.price_per_month }} грн / місяць</p>
+          <p class="meta">
+            {{ listing.address }} · кімнат: {{ listing.get_rooms_display }}
+            {% if listing.floor %}
+              · поверх: {{ listing.floor }}{% if listing.total_floors %} з {{ listing.total_floors }}{% endif %}
+            {% endif %}
+            {% if listing.area_sqm %}· {{ listing.area_sqm }} м²{% endif %}
+            {% if listing.heating %}· {{ listing.get_heating_display }}{% endif %}
+            {% if listing.pets %}· {{ listing.get_pets_display }}{% endif %}
+          </p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Поки немає активних оголошень.</p>
+  {% endif %}
+{% endblock %}

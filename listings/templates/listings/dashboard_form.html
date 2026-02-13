@@ -1,0 +1,104 @@
+{% extends "listings/dashboard_base.html" %}
+
+{% block title %}
+  {% if mode == "create" %}Нове оголошення{% else %}Редагування оголошення{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <h2>
+      {% if mode == "create" %}Нове оголошення{% else %}Редагування оголошення{% endif %}
+    </h2>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <label for="{{ form.title.id_for_label }}">Заголовок</label>
+      {{ form.title }}
+
+      <label for="{{ form.address.id_for_label }}">Адреса</label>
+      {{ form.address }}
+
+      <label for="{{ form.price_per_month.id_for_label }}">Ціна за місяць</label>
+      {{ form.price_per_month }}
+
+      <label for="{{ form.floor.id_for_label }}">Поверх</label>
+      {{ form.floor }}
+
+      <label for="{{ form.total_floors.id_for_label }}">Загальна кількість поверхів</label>
+      {{ form.total_floors }}
+
+      <label for="{{ form.heating.id_for_label }}">Опалення</label>
+      {{ form.heating }}
+
+      <label for="{{ form.pets.id_for_label }}">Тварини</label>
+      {{ form.pets }}
+
+      <label for="{{ form.rooms.id_for_label }}">Кімнати</label>
+      {{ form.rooms }}
+
+      <label for="{{ form.area_sqm.id_for_label }}">Площа (м²)</label>
+      {{ form.area_sqm }}
+
+      <label for="{{ form.description.id_for_label }}">Опис</label>
+      {{ form.description }}
+
+      <label for="photo">Фото</label>
+      {% if form.instance.photo %}
+        <div style="margin-top: 8px;">
+          <img
+            src="{{ form.instance.photo.url }}"
+            alt="Фото"
+            class="thumb"
+            style="margin-bottom: 8px;"
+          />
+        </div>
+      {% endif %}
+      <input id="photo" name="photo" type="file" style="display: none;" />
+      <label for="photo" class="btn upload">Завантажити головне фото</label>
+
+      {% if form.instance.pk and form.instance.images.all %}
+        <div style="margin-top: 10px;">
+          <p class="muted">Поточні фото:</p>
+          <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); justify-items: center;">
+            {% for image in form.instance.images.all %}
+              <div class="panel" style="padding: 8px;">
+                <img
+                  src="{{ image.image.url }}"
+                  alt="Фото"
+                  class="thumb"
+                  style="margin-bottom: 8px;"
+                />
+                <form method="post" action="{% url 'listings:dashboard_image_delete' image.pk %}">
+                  {% csrf_token %}
+                  <button class="btn danger" type="submit" style="width: 100%;">Видалити</button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <label for="gallery">Галерея (можна вибрати кілька фото)</label>
+      <input id="gallery" name="gallery" type="file" multiple style="display: none;" />
+      <label for="gallery" class="btn upload">Завантажити фото в галерею</label>
+
+      <label for="{{ form.contact_name.id_for_label }}">Контактна особа</label>
+      {{ form.contact_name }}
+
+      <label for="{{ form.contact_phone.id_for_label }}">Телефон</label>
+      {{ form.contact_phone }}
+
+      <label for="{{ form.contact_email.id_for_label }}">Email</label>
+      {{ form.contact_email }}
+
+      <label for="{{ form.status.id_for_label }}">Статус</label>
+      {{ form.status }}
+
+      <div class="actions" style="margin-top: 16px;">
+        <button class="btn" type="submit">Зберегти</button>
+        <a class="btn secondary" href="{% url 'listings:dashboard_list' %}">Скасувати</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

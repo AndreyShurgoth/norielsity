@@ -1,0 +1,35 @@
+{% extends "listings/base.html" %}
+
+{% block title %}Оголошення автора — NoRielSity{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>Оголошення автора</h2>
+    <p class="meta">
+      {{ author.get_full_name|default:author.username }}
+    </p>
+  </div>
+
+  {% if listings %}
+    <div class="grid">
+      {% for listing in listings %}
+        <article class="card">
+          <h3>
+            <a href="{% url 'listings:listing_detail' listing.pk %}">
+              {{ listing.title }}
+            </a>
+          </h3>
+          <p class="price">{{ listing.price_per_month }} грн / місяць</p>
+          <p class="meta">
+            {{ listing.address }} · кімнат: {{ listing.get_rooms_display }}
+            {% if listing.floor %}
+              · поверх: {{ listing.floor }}{% if listing.total_floors %} з {{ listing.total_floors }}{% endif %}
+            {% endif %}
+          </p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Поки немає активних оголошень.</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Кабінет — NoRielSity{% endblock %}</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f1ea;
+        --panel: #ffffff;
+        --ink: #201a14;
+        --muted: #6b6258;
+        --accent: #1f5b5e;
+        --danger: #ff8b8b;
+        --border: #e2ddd4;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0b1416;
+        --panel: #111d21;
+        --ink: #e7f3f1;
+        --muted: #9fb3b1;
+        --accent: #56d3c2;
+        --danger: #ff8b8b;
+        --border: #1f2c31;
+      }
+      body {
+        margin: 0;
+        font-family: "Verdana", "Tahoma", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      header {
+        padding: 20px 16px;
+        border-bottom: 1px solid var(--border);
+        background: color-mix(in srgb, var(--bg) 70%, var(--panel) 30%);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 22px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      header p {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+      main {
+        max-width: 980px;
+        margin: 24px auto 56px;
+        padding: 0 16px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .btn {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+      }
+      .btn.upload {
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      }
+      .btn.upload:hover {
+        filter: brightness(1.05);
+      }
+      .btn.secondary {
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+        border: none;
+      }
+      :root[data-theme="dark"] .btn.secondary {
+        background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+        color: #05221f;
+      }
+      :root[data-theme="dark"] .btn {
+        background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+        color: #05221f;
+      }
+      .btn.danger {
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+      }
+      a {
+        color: var(--accent);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: color-mix(in srgb, var(--panel) 90%, var(--bg) 10%);
+        color: var(--ink);
+        box-sizing: border-box;
+      }
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        color: var(--muted);
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .thumb {
+        width: 160px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 8px;
+        display: block;
+      }
+      .theme-toggle {
+        border: none;
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+        padding: 8px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+        box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+      }
+      :root[data-theme="dark"] .theme-toggle {
+        background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+        color: #05221f;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <div>
+          <h1>Кабінет користувача</h1>
+          <p>Керування оголошеннями</p>
+        </div>
+        <div class="actions">
+          <button class="theme-toggle" id="theme-toggle" type="button">Тема: світла</button>
+          <a class="btn secondary" href="{% url 'listings:notifications_list' %}">Сповіщення</a>
+          <a class="btn secondary" href="{% url 'listings:messages_list' %}">Повідомлення</a>
+          <a class="btn secondary" href="{% url 'listings:profile_edit' %}">Профіль</a>
+          <a class="btn secondary" href="{% url 'listings:listing_list' %}">На сайт</a>
+          <a class="btn secondary" href="{% url 'logout' %}">Вийти</a>
+        </div>
+      </div>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        const saved = localStorage.getItem("theme");
+        const prefersDark =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const initial = saved || (prefersDark ? "dark" : "light");
+        root.dataset.theme = initial;
+        btn.textContent = initial === "dark" ? "Тема: темна" : "Тема: світла";
+
+        btn.addEventListener("click", function () {
+          const next = root.dataset.theme === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          localStorage.setItem("theme", next);
+          btn.textContent = next === "dark" ? "Тема: темна" : "Тема: світла";
+        });
+      })();
+    </script>
+  </body>
+</html>

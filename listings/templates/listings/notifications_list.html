@@ -1,0 +1,44 @@
+{% extends "listings/dashboard_base.html" %}
+
+{% block title %}Сповіщення — NoRielSity{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <h2>Сповіщення</h2>
+    <p class="muted">Оновлення сайту, технічні роботи та результати скарг.</p>
+  </div>
+
+  <div class="panel">
+    {% if notifications %}
+      <div style="display: grid; gap: 12px;">
+        {% for item in notifications %}
+          <article
+            style="
+              border: 1px solid var(--border);
+              border-radius: 10px;
+              padding: 12px;
+              background: color-mix(in srgb, var(--panel) 88%, var(--bg) 12%);
+            "
+          >
+            <div class="row" style="align-items: flex-start;">
+              <div>
+                <strong>{{ item.title }}</strong>
+                <div class="muted" style="margin-top: 4px; font-size: 13px;">
+                  {{ item.get_notification_type_display }} · {{ item.created_at|date:"d.m.Y H:i" }}
+                </div>
+              </div>
+            </div>
+            <p style="margin: 10px 0 0; white-space: pre-line;">{{ item.message }}</p>
+            {% if item.related_report %}
+              <p class="muted" style="margin: 8px 0 0; font-size: 13px;">
+                Скарга #{{ item.related_report_id }} щодо оголошення: {{ item.related_report.listing.title }}
+              </p>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Поки що немає сповіщень.</p>
+    {% endif %}
+  </div>
+{% endblock %}

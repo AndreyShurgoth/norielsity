@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}NoRielSity{% endblock %}</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f2eb;
+        --ink: #1e1b16;
+        --accent: #1f5b5e;
+        --muted: #6b6258;
+        --card: #fffdf9;
+        --border: #e2ddd4;
+        --surface: #fdfaf4;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0b1214;
+        --ink: #e6eef2;
+        --accent: #68d0c5;
+        --muted: #9fb1bb;
+        --card: #0f1a1e;
+        --border: #1b2a30;
+        --surface: #0e171b;
+      }
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: "Georgia", "Times New Roman", serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      html {
+        background: var(--surface);
+      }
+      header {
+        padding: 0 16px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        margin: 0 !important;
+      }
+      .header-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .brand {
+        font-size: 20px;
+        letter-spacing: 1px;
+        color: var(--ink);
+        font-weight: 700;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: 0.3px;
+        color: var(--muted);
+      }
+      .header-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      header p {
+        margin: 2px 0 0;
+        color: var(--muted);
+      }
+      main {
+        max-width: 960px;
+        margin: 24px auto 48px;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .price {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .cabinet-btn,
+      .theme-toggle {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      :root[data-theme="dark"] .cabinet-btn,
+      :root[data-theme="dark"] .theme-toggle {
+        background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+        color: #05221f;
+      }
+      .cabinet-btn:hover,
+      .theme-toggle:hover {
+        filter: brightness(1.05);
+        text-decoration: none;
+      }
+      .header-actions {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .toast-stack {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 2000;
+        display: grid;
+        gap: 8px;
+        max-width: min(92vw, 360px);
+      }
+      .toast {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+      }
+      .toast.success {
+        border-color: color-mix(in srgb, #2f7f76 45%, var(--border) 55%);
+      }
+      .toast.error {
+        border-color: color-mix(in srgb, #b42318 45%, var(--border) 55%);
+      }
+      .toast-close {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        width: 24px;
+        height: 24px;
+        background: transparent;
+        color: var(--ink);
+        line-height: 1;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .fav-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+        font-size: 18px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+      }
+      .fav-btn .count,
+      .msg-btn .count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--accent);
+        color: #05221f;
+        border-radius: 999px;
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+      .msg-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+        color: #f8f5ef;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+      }
+      :root[data-theme="dark"] .fav-btn,
+      :root[data-theme="dark"] .msg-btn {
+        background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+        color: #05221f;
+      }
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-top">
+        <div class="header-row">
+          <div class="brand">NoRielSity</div>
+          <h1>Оренда квартир</h1>
+          <span class="header-sub">Актуальні оголошення від власників</span>
+        </div>
+        <span class="header-actions">
+          <a class="msg-btn" href="{% url 'listings:messages_list' %}" aria-label="Повідомлення">
+            ✉
+            {% if unread_messages_count %}
+              <span class="count">{{ unread_messages_count }}</span>
+            {% endif %}
+          </a>
+          <a class="fav-btn" href="{% url 'listings:favorites_list' %}" aria-label="Обране">
+            ♥
+            {% if favorites_count %}
+              <span class="count">{{ favorites_count }}</span>
+            {% endif %}
+          </a>
+          <a class="cabinet-btn" href="{% url 'listings:dashboard_list' %}">
+            Мій кабінет
+          </a>
+          <button class="theme-toggle" id="theme-toggle" type="button">Тема: світла</button>
+        </span>
+      </div>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    {% if messages %}
+      <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true">
+        {% for message in messages %}
+          <div class="toast {% if message.tags %}{{ message.tags }}{% endif %}" role="status">
+            <span>{{ message }}</span>
+            <button class="toast-close" type="button" aria-label="Закрити">×</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        const saved = localStorage.getItem("theme");
+        const prefersDark =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const initial = saved || (prefersDark ? "dark" : "light");
+        root.dataset.theme = initial;
+        btn.textContent = initial === "dark" ? "Тема: темна" : "Тема: світла";
+
+        btn.addEventListener("click", function () {
+          const next = root.dataset.theme === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          localStorage.setItem("theme", next);
+          btn.textContent = next === "dark" ? "Тема: темна" : "Тема: світла";
+        });
+      })();
+
+      (function () {
+        const stack = document.getElementById("toast-stack");
+        if (!stack) return;
+
+        function closeToast(toast) {
+          toast.remove();
+          if (!stack.children.length) {
+            stack.remove();
+          }
+        }
+
+        const toasts = Array.from(stack.querySelectorAll(".toast"));
+        toasts.forEach((toast) => {
+          const closeBtn = toast.querySelector(".toast-close");
+          if (closeBtn) {
+            closeBtn.addEventListener("click", () => closeToast(toast));
+          }
+          setTimeout(() => closeToast(toast), 10000);
+        });
+      })();
+    </script>
+  </body>
+</html>

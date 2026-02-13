@@ -1,0 +1,20 @@
+[0;1;32m●[0m gunicorn.service - gunicorn daemon for NoRielSity
+     Loaded: loaded (]8;;file://vps-55129/etc/systemd/system/gunicorn.service/etc/systemd/system/gunicorn.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Fri 2026-02-13 20:45:51 UTC; 2min 45s ago
+   Main PID: 215869 (gunicorn)
+      Tasks: 5 (limit: 2266)
+     Memory: 66.8M (peak: 67.0M)
+        CPU: 494ms
+     CGroup: /system.slice/gunicorn.service
+             ├─[0;38;5;245m215869 /home/django/web/venv/bin/python3 /home/django/web/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/django/web/norielsity.sock NoRielSity.wsgi:application[0m
+             ├─[0;38;5;245m215916 /home/django/web/venv/bin/python3 /home/django/web/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/django/web/norielsity.sock NoRielSity.wsgi:application[0m
+             ├─[0;38;5;245m215917 /home/django/web/venv/bin/python3 /home/django/web/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/django/web/norielsity.sock NoRielSity.wsgi:application[0m
+             └─[0;38;5;245m215918 /home/django/web/venv/bin/python3 /home/django/web/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/django/web/norielsity.sock NoRielSity.wsgi:application[0m
+
+Feb 13 20:45:51 vps-55129 systemd[1]: Started gunicorn.service - gunicorn daemon for NoRielSity.
+Feb 13 20:45:51 vps-55129 gunicorn[215869]: [2026-02-13 20:45:51 +0000] [215869] [INFO] Starting gunicorn 25.1.0
+Feb 13 20:45:51 vps-55129 gunicorn[215869]: [2026-02-13 20:45:51 +0000] [215869] [INFO] Listening at: unix:/home/django/web/norielsity.sock (215869)
+Feb 13 20:45:51 vps-55129 gunicorn[215869]: [2026-02-13 20:45:51 +0000] [215869] [INFO] Using worker: sync
+Feb 13 20:45:51 vps-55129 gunicorn[215869]: [2026-02-13 20:45:51 +0000] [215869] [INFO] Control socket listening at /home/django/web/gunicorn.ctl
+Feb 13 20:45:52 vps-55129 gunicorn[215917]: [2026-02-13 20:45:52 +0000] [215917] [INFO] Booting worker with pid: 215917
+Feb 13 20:45:52 vps-55129 gunicorn[215918]: [2026-02-13 20:45:52 +0000] [215918] [INFO] Booting worker with pid: 215918

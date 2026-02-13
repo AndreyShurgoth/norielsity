@@ -1,0 +1,165 @@
+﻿{% extends "listings/dashboard_base.html" %}`r`n{% load listings_extras %}
+
+{% block title %}Чати — NoRielSity{% endblock %}
+
+{% block content %}
+  <style>
+    .chat-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .chat-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 12px 12px 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      background: color-mix(in srgb, var(--panel) 92%, var(--bg) 8%);
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .chat-tab.active {
+      background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      color: #f8f5ef;
+      box-shadow: 0 8px 18px rgba(31, 91, 94, 0.2);
+    }
+    :root[data-theme="dark"] .chat-tab.active {
+      background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+      color: #05221f;
+    }
+    .chat-table {
+      table-layout: fixed;
+    }
+    .chat-table .listing-col {
+      max-width: 0;
+    }
+    .chat-table .listing-col a {
+      display: inline-block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: bottom;
+    }
+    .chat-table .action-col {
+      width: 170px;
+      min-width: 170px;
+      white-space: nowrap;
+    }
+    .chat-table .action-col .btn {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+    }
+  </style>
+
+  <div class="panel">
+    <h2>Чати</h2>
+    <p class="muted">Оберіть вкладку для перегляду діалогів.</p>
+    <div class="chat-tabs">
+      <a class="chat-tab {% if active_tab == 'outgoing' %}active{% endif %}" href="{% url 'listings:messages_list' %}?tab=outgoing">
+        Вихідні ({{ outgoing_threads|length }})
+      </a>
+      <a class="chat-tab {% if active_tab == 'incoming' %}active{% endif %}" href="{% url 'listings:messages_list' %}?tab=incoming">
+        Вхідні ({{ incoming_threads|length }})
+      </a>
+      <a class="chat-tab {% if active_tab == 'unread' %}active{% endif %}" href="{% url 'listings:messages_list' %}?tab=unread">
+        Непрочитані ({{ unread_threads|length }})
+      </a>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>
+      {% if active_tab == "incoming" %}
+        Вхідні чати
+      {% elif active_tab == "outgoing" %}
+        Вихідні чати
+      {% else %}
+        Непрочитані чати
+      {% endif %}
+    </h3>
+    {% if current_threads %}
+      <table class="chat-table">
+        <thead>
+          <tr>
+            <th>
+              {% if active_tab == "incoming" %}
+                Орендар
+              {% elif active_tab == "outgoing" %}
+                Орендодавець
+              {% else %}
+                Співрозмовник
+              {% endif %}
+            </th>
+            <th class="listing-col">Оголошення</th>
+            <th>Оновлено</th>
+            <th class="action-col">Дія</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for thread in current_threads %}
+            <tr>
+              <td>
+                {% if active_tab == "incoming" %}
+                  {{ thread.tenant.username }}
+                  {% if thread.tenant_last_seen %}
+                    <div class="muted" style="font-size: 12px;">
+                      був(ла): {{ thread.tenant_last_seen|last_seen_human }}
+                    </div>
+                  {% endif %}
+                {% elif active_tab == "outgoing" %}
+                  {{ thread.landlord.username }}
+                  {% if thread.landlord_last_seen %}
+                    <div class="muted" style="font-size: 12px;">
+                      був(ла): {{ thread.landlord_last_seen|last_seen_human }}
+                    </div>
+                  {% endif %}
+                {% else %}
+                  {% if request.user.id == thread.landlord_id %}
+                    {{ thread.tenant.username }}
+                  {% else %}
+                    {{ thread.landlord.username }}
+                  {% endif %}
+                  {% if thread.counterparty_last_seen %}
+                    <div class="muted" style="font-size: 12px;">
+                      був(ла): {{ thread.counterparty_last_seen|last_seen_human }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </td>
+              <td class="listing-col">
+                <a href="{% url 'listings:listing_detail' thread.listing.pk %}">
+                  {{ thread.listing.title }}
+                </a>
+              </td>
+              <td>{{ thread.updated_at|date:"d.m.Y H:i" }}</td>
+              <td class="action-col">
+                <a class="btn secondary" href="{% url 'listings:chat_detail' thread.id %}">
+                  Відкрити чат
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">
+        {% if active_tab == "incoming" %}
+          Поки що немає вхідних чатів.
+        {% elif active_tab == "outgoing" %}
+          Поки що немає вихідних чатів.
+        {% else %}
+          Поки що немає непрочитаних чатів.
+        {% endif %}
+      </p>
+    {% endif %}
+  </div>
+{% endblock %}
+

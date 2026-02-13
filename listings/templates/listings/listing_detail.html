@@ -1,0 +1,556 @@
+﻿{% extends "listings/base.html" %}`r`n{% load listings_extras %}
+
+{% block title %}{{ listing.title }} — NoRielSity{% endblock %}
+
+{% block content %}
+  <style>
+    .listing-layout {
+      display: grid;
+      gap: 16px;
+    }
+    @media (min-width: 900px) {
+      .listing-layout {
+        grid-template-columns: 65% 35%;
+        align-items: start;
+      }
+    }
+    .main-photo {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+    .gallery-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    .gallery-thumb {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .contact-card {
+      position: sticky;
+      top: 16px;
+    }
+    .contact-box {
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      background: transparent;
+    }
+    .owner-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .owner-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .contact-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .contact-actions .btn {
+      text-align: center;
+    }
+    .contact-main-btn {
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      color: #f8f5ef;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    :root[data-theme="dark"] .btn {
+      background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+      color: #05221f;
+    }
+    .message-wrap {
+      width: 100%;
+      position: relative;
+    }
+    .message-modal {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: min(320px, 88vw);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 20;
+    }
+    .message-modal.open {
+      display: block;
+    }
+    .message-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .message-close {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--ink);
+      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .message-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 10px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+    .message-history {
+      max-height: 180px;
+      overflow-y: auto;
+      display: grid;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding-right: 4px;
+    }
+    .message-bubble {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .message-bubble.me {
+      background: color-mix(in srgb, var(--accent) 18%, var(--card) 82%);
+    }
+    .action-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #1f5b5e 0%, #2f7f76 100%);
+      color: #f8f5ef;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 18px rgba(31, 91, 94, 0.25);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    :root[data-theme="dark"] .action-primary {
+      background: linear-gradient(135deg, #68d0c5 0%, #2aaea3 100%);
+      color: #05221f;
+    }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 24px;
+    }
+    .lightbox.open {
+      display: flex;
+    }
+    .lightbox img {
+      max-width: 92vw;
+      max-height: 86vh;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    .lightbox-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #ffffff;
+      border: 1px solid #d9d9d9;
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #111111;
+    }
+    .lightbox-nav {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .lightbox-nav button {
+      pointer-events: auto;
+      background: #ffffff;
+      border: 1px solid #d9d9d9;
+      border-radius: 999px;
+      padding: 10px 14px;
+      margin: 0 12px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #111111;
+    }
+    :root[data-theme="dark"] .lightbox-btn,
+    :root[data-theme="dark"] .lightbox-nav button {
+      background: #0f1a1e;
+      color: #e7f3f1;
+      border-color: #1f2c31;
+    }
+  </style>
+
+  <article class="card">
+    <a class="action-primary" href="{% url 'listings:listing_list' %}">← Назад до списку</a>
+    <h2>{{ listing.title }}</h2>
+    <p class="price">{{ listing.price_per_month }} грн / місяць</p>
+    <p class="meta">
+      {{ listing.address }} · кімнат: {{ listing.get_rooms_display }}
+      {% if listing.floor %}
+        · поверх: {{ listing.floor }}{% if listing.total_floors %} з {{ listing.total_floors }}{% endif %}
+      {% endif %}
+      {% if listing.area_sqm %}· {{ listing.area_sqm }} м²{% endif %}
+      {% if listing.heating %}· {{ listing.get_heating_display }}{% endif %}
+      {% if listing.pets %}· {{ listing.get_pets_display }}{% endif %}
+      {% if request.user == listing.owner %}
+        · переглядів: {{ listing.views_count }}
+      {% endif %}
+    </p>
+
+    <div class="listing-layout">
+      <div>
+        {% if listing.photo %}
+          <img
+            src="{{ listing.photo.url }}"
+            alt="{{ listing.title }}"
+            class="main-photo"
+            data-gallery-src="{{ listing.photo.url }}"
+          />
+        {% endif %}
+        {% if listing.images.all %}
+          <div class="gallery-grid">
+            {% for image in listing.images.all %}
+              <img
+                src="{{ image.image.url }}"
+                alt="{{ listing.title }}"
+                class="gallery-thumb"
+                data-gallery-src="{{ image.image.url }}"
+              />
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <aside class="contact-card">
+        <div class="contact-box">
+          <h3>Контакти</h3>
+          <div class="owner-row">
+            <img class="owner-avatar" src="{{ owner_profile.avatar.url }}" alt="Аватар" />
+            <p style="margin: 0;">{{ listing.owner.profile.full_name|default:listing.owner.username }}</p>
+          </div>
+          {% if owner_last_seen %}
+            <p class="meta" style="margin-top: -6px; font-size: 12px;">
+              Був(ла) онлайн: {{ owner_last_seen|last_seen_human }}
+            </p>
+          {% endif %}
+          <div class="contact-actions">
+            <a class="btn secondary contact-main-btn" href="{% url 'listings:author_listings' listing.owner_id %}">
+              Інші оголошення автора
+            </a>
+            {% if listing.contact_phone %}
+              <button class="action-primary contact-main-btn" type="button" id="phone-btn" data-phone="{{ listing.contact_phone }}">
+                Показати номер телефону
+              </button>
+            {% endif %}
+            <div class="message-wrap">
+              <button class="action-primary contact-main-btn" type="button" id="open-message-modal">Написати повідомлення</button>
+              <div class="message-modal" id="message-modal">
+                <div class="message-head">
+                  <span>Повідомлення автору</span>
+                  <button class="message-close" id="close-message-modal" type="button">✕</button>
+                </div>
+                {% if request.user.is_authenticated %}
+                  <form method="post" action="{% url 'listings:send_message' listing.pk %}" id="message-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                    <div class="message-history" id="message-history">
+                      {% if thread_messages %}
+                        {% for m in thread_messages %}
+                          <div class="message-bubble {% if m.sender_id == request.user.id %}me{% endif %}" data-msg-id="{{ m.id }}">
+                            {{ m.text }}
+                          </div>
+                        {% endfor %}
+                      {% else %}
+                        <div class="meta">Поки що немає повідомлень.</div>
+                      {% endif %}
+                    </div>
+                    <input
+                      id="message-text"
+                      class="message-input"
+                      name="message_text"
+                      type="text"
+                      maxlength="1000"
+                      placeholder="Введіть повідомлення"
+                      required
+                    />
+                    <button class="action-primary" type="submit">Надіслати</button>
+                  </form>
+                {% else %}
+                  <p class="meta" style="margin-top: 0;">Щоб написати, увійдіть в акаунт.</p>
+                  <a class="action-primary" href="{% url 'login' %}?next={{ request.get_full_path }}">Увійти</a>
+                {% endif %}
+              </div>
+            </div>
+            {% if request.user.is_authenticated %}
+              <form method="post" action="{% url 'listings:favorite_toggle' listing.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                <button class="action-primary" type="submit" aria-label="Обране">
+                  {% if is_favorite %}♥{% else %}♡{% endif %}
+                </button>
+              </form>
+              {% if request.user != listing.owner %}
+                <a class="action-primary contact-main-btn" href="{% url 'listings:report_listing' listing.pk %}">
+                  Поскаржитися на оголошення
+                </a>
+              {% endif %}
+            {% else %}
+              <a class="action-primary" href="{% url 'login' %}?next={{ request.get_full_path }}" aria-label="Обране">♡</a>
+              <a class="action-primary contact-main-btn" href="{% url 'login' %}?next={% url 'listings:report_listing' listing.pk %}">
+                Поскаржитися на оголошення
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    {% if listing.description %}
+      <p>{{ listing.description }}</p>
+    {% endif %}
+  </article>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-btn" id="lightbox-close">Закрити ✕</button>
+    <div class="lightbox-nav">
+      <button id="lightbox-prev">←</button>
+      <button id="lightbox-next">→</button>
+    </div>
+    <img id="lightbox-image" src="" alt="Фото" />
+  </div>
+
+  <script>
+    (function () {
+      const images = Array.from(document.querySelectorAll("[data-gallery-src]"));
+      const lightbox = document.getElementById("lightbox");
+      const img = document.getElementById("lightbox-image");
+      const btnClose = document.getElementById("lightbox-close");
+      const btnPrev = document.getElementById("lightbox-prev");
+      const btnNext = document.getElementById("lightbox-next");
+      const phoneBtn = document.getElementById("phone-btn");
+      const openMessageModalBtn = document.getElementById("open-message-modal");
+      const closeMessageModalBtn = document.getElementById("close-message-modal");
+      const messageModal = document.getElementById("message-modal");
+      const messageText = document.getElementById("message-text");
+      const messageHistory = document.getElementById("message-history");
+      const messageForm = document.getElementById("message-form");
+      let threadId = "{{ thread_id|default:'' }}";
+      let lastId = 0;
+      let current = 0;
+
+      if (phoneBtn) {
+        phoneBtn.addEventListener("click", () => {
+          phoneBtn.textContent = phoneBtn.dataset.phone;
+        });
+      }
+
+      if (messageHistory) {
+        const existing = Array.from(messageHistory.querySelectorAll("[data-msg-id]"));
+        if (existing.length) {
+          lastId = Math.max(...existing.map((el) => Number(el.getAttribute("data-msg-id")) || 0));
+        }
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function appendModalMessage(msg) {
+        if (!messageHistory) return;
+        const placeholder = messageHistory.querySelector(".meta");
+        if (placeholder) {
+          placeholder.remove();
+        }
+        const div = document.createElement("div");
+        div.className = "message-bubble" + (msg.is_me ? " me" : "");
+        div.setAttribute("data-msg-id", String(msg.id));
+        div.innerHTML = escapeHtml(msg.text);
+        messageHistory.appendChild(div);
+        messageHistory.scrollTop = messageHistory.scrollHeight;
+        lastId = Math.max(lastId, msg.id);
+      }
+
+      function openMessageModal() {
+        messageModal.classList.add("open");
+        if (messageText) {
+          messageText.focus();
+        }
+        if (messageHistory) {
+          messageHistory.scrollTop = messageHistory.scrollHeight;
+        }
+      }
+
+      if (openMessageModalBtn && messageModal) {
+        openMessageModalBtn.addEventListener("click", () => {
+          openMessageModal();
+        });
+      }
+
+      if (closeMessageModalBtn && messageModal) {
+        closeMessageModalBtn.addEventListener("click", () => {
+          messageModal.classList.remove("open");
+        });
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && messageModal && messageModal.classList.contains("open")) {
+          messageModal.classList.remove("open");
+        }
+      });
+
+      if (messageText) {
+        messageText.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            const form = document.getElementById("message-form");
+            if (form) {
+              e.preventDefault();
+              form.requestSubmit();
+            }
+          }
+        });
+      }
+
+      if (messageForm) {
+        messageForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const textValue = messageText ? messageText.value.trim() : "";
+          if (!textValue) return;
+
+          const response = await fetch(messageForm.action, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: new FormData(messageForm),
+          });
+          if (!response.ok) return;
+          const data = await response.json();
+          if (data.ok && data.message) {
+            appendModalMessage(data.message);
+            if (data.thread_id) {
+              threadId = String(data.thread_id);
+            }
+            if (messageText) {
+              messageText.value = "";
+              messageText.focus();
+            }
+          }
+        });
+      }
+
+      async function pollModalMessages() {
+        if (!threadId || !messageModal || !messageModal.classList.contains("open")) return;
+        const url = "{% url 'listings:chat_messages_api' 0 %}".replace("/0/", "/" + threadId + "/");
+        const response = await fetch(url + "?after_id=" + encodeURIComponent(String(lastId)), {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!data.ok || !data.messages) return;
+        for (const msg of data.messages) {
+          appendModalMessage(msg);
+        }
+      }
+
+      setInterval(pollModalMessages, 3000);
+
+      const shouldOpenModal = new URLSearchParams(window.location.search).get("open_message");
+      if (shouldOpenModal === "1" && messageModal) {
+        openMessageModal();
+      }
+
+      if (!images.length) return;
+
+      function openAt(index) {
+        current = index;
+        img.src = images[current].dataset.gallerySrc;
+        lightbox.classList.add("open");
+      }
+      function close() {
+        lightbox.classList.remove("open");
+        img.src = "";
+      }
+      function prev() {
+        current = (current - 1 + images.length) % images.length;
+        img.src = images[current].dataset.gallerySrc;
+      }
+      function next() {
+        current = (current + 1) % images.length;
+        img.src = images[current].dataset.gallerySrc;
+      }
+
+      images.forEach((el, idx) => {
+        el.addEventListener("click", () => openAt(idx));
+      });
+      btnClose.addEventListener("click", close);
+      btnPrev.addEventListener("click", prev);
+      btnNext.addEventListener("click", next);
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) close();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (!lightbox.classList.contains("open")) return;
+        if (e.key === "Escape") close();
+        if (e.key === "ArrowLeft") prev();
+        if (e.key === "ArrowRight") next();
+      });
+    })();
+  </script>
+{% endblock %}
+

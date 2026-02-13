@@ -1,0 +1,50 @@
+{% extends "listings/dashboard_base.html" %}
+
+{% block title %}Мої оголошення — NoRielSity{% endblock %}
+
+{% block content %}
+  <div class="panel row">
+    <div>
+      <h2>Мої оголошення</h2>
+      <p class="muted">Управляй своїми пропозиціями оренди.</p>
+      <p class="muted">Загальні перегляди: {{ total_views }}</p>
+    </div>
+    <div>
+      <a class="btn" href="{% url 'listings:dashboard_create' %}">Додати оголошення</a>
+    </div>
+  </div>
+
+  <div class="panel">
+    {% if listings %}
+      <table>
+        <thead>
+          <tr>
+            <th>Назва</th>
+            <th>Ціна</th>
+            <th>Кімнати</th>
+            <th>Перегляди</th>
+            <th>Статус</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for listing in listings %}
+            <tr>
+              <td>{{ listing.title }}</td>
+              <td>{{ listing.price_per_month }} грн</td>
+              <td>{{ listing.get_rooms_display }}</td>
+              <td>{{ listing.views_count }}</td>
+              <td>{{ listing.get_status_display }}</td>
+              <td class="actions">
+                <a class="btn secondary" href="{% url 'listings:dashboard_update' listing.pk %}">Редагувати</a>
+                <a class="btn danger" href="{% url 'listings:dashboard_delete' listing.pk %}">Видалити</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Поки немає оголошень.</p>
+    {% endif %}
+  </div>
+{% endblock %}

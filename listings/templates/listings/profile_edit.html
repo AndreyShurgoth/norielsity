@@ -1,0 +1,75 @@
+﻿{% extends "listings/dashboard_base.html" %}
+
+{% block title %}Профіль — NoRielSity{% endblock %}
+
+{% block content %}
+  <div class="panel">
+    <style>
+      .avatar-block {
+        margin-top: 8px;
+      }
+      .avatar-preview {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: block;
+        margin-bottom: 10px;
+      }
+      .avatar-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .avatar-input {
+        display: none;
+      }
+      .avatar-clear {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .avatar-clear input {
+        width: auto;
+      }
+    </style>
+    <h2>Профіль</h2>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <label for="{{ form.first_name.id_for_label }}">Ім’я</label>
+      {{ form.first_name }}
+
+      <label for="{{ form.last_name.id_for_label }}">Прізвище</label>
+      {{ form.last_name }}
+
+      <label for="{{ form.phone.id_for_label }}">Телефон</label>
+      {{ form.phone }}
+
+      <label for="id_avatar">Фото профілю</label>
+      <div class="avatar-block">
+        {% if form.instance.avatar %}
+          <img class="avatar-preview" src="{{ form.instance.avatar.url }}" alt="Аватар" />
+        {% endif %}
+        <div class="avatar-actions">
+          <input class="avatar-input" id="id_avatar" name="avatar" type="file" accept="image/*" />
+          <label for="id_avatar" class="btn upload">Завантажити фото</label>
+          {% if form.instance.avatar %}
+            <label class="avatar-clear" for="avatar-clear">
+              <input id="avatar-clear" name="avatar-clear" type="checkbox" />
+              Видалити фото
+            </label>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top: 16px;">
+        <button class="btn" type="submit">Зберегти</button>
+        <a class="btn secondary" href="{% url 'listings:dashboard_list' %}">Назад</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

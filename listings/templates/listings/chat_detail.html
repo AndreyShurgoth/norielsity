@@ -1,0 +1,148 @@
+﻿{% extends "listings/dashboard_base.html" %}`r`n{% load listings_extras %}
+
+{% block title %}Чат — NoRielSity{% endblock %}
+
+{% block content %}
+  <style>
+    .chat-box {
+      max-height: 60vh;
+      overflow-y: auto;
+      display: grid;
+      gap: 10px;
+    }
+    .msg {
+      padding: 10px 12px;
+      border-radius: 12px;
+      max-width: 75%;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 80%, var(--bg) 20%);
+    }
+    .msg.me {
+      margin-left: auto;
+      background: color-mix(in srgb, var(--accent) 22%, var(--panel) 78%);
+    }
+    .msg-meta {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+
+  <div class="panel">
+    <h2>Чат з {{ other_user.username }}</h2>
+    {% if other_last_seen %}
+      <p class="muted" style="font-size: 12px; margin-top: 4px;">
+        Був(ла) онлайн: {{ other_last_seen|last_seen_human }}
+      </p>
+    {% endif %}
+    <p class="muted">
+      Оголошення:
+      <a href="{% url 'listings:listing_detail' thread.listing.pk %}">{{ thread.listing.title }}</a>
+    </p>
+  </div>
+
+  <div class="panel chat-box" id="chat-box">
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="msg {% if msg.sender_id == request.user.id %}me{% endif %}" data-msg-id="{{ msg.id }}">
+          <div>{{ msg.text }}</div>
+          <div class="msg-meta">{{ msg.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">Поки що немає повідомлень.</p>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <form method="post" id="chat-form">
+      {% csrf_token %}
+      <label for="message_text">Повідомлення</label>
+      <textarea id="message_text" name="message_text" rows="3" maxlength="1000" required></textarea>
+      <div class="actions" style="margin-top: 10px;">
+        <button class="btn" type="submit">Надіслати</button>
+        <a class="btn secondary" href="{% url 'listings:messages_list' %}">Назад до чатів</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      const textarea = document.getElementById("message_text");
+      const form = document.getElementById("chat-form");
+      const box = document.getElementById("chat-box");
+      const pollUrl = "{% url 'listings:chat_messages_api' thread.id %}";
+      let lastId = 0;
+
+      function escapeHtml(text) {
+        return text
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function appendMessage(msg) {
+        const div = document.createElement("div");
+        div.className = "msg" + (msg.is_me ? " me" : "");
+        div.setAttribute("data-msg-id", String(msg.id));
+        div.innerHTML =
+          "<div>" + escapeHtml(msg.text) + "</div>" +
+          "<div class='msg-meta'>" + msg.created_at + "</div>";
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+        lastId = Math.max(lastId, msg.id);
+      }
+
+      if (box) {
+        const existing = Array.from(box.querySelectorAll("[data-msg-id]"));
+        if (existing.length) {
+          lastId = Math.max(...existing.map((el) => Number(el.getAttribute("data-msg-id")) || 0));
+        }
+        box.scrollTop = box.scrollHeight;
+      }
+
+      if (textarea && form) {
+        textarea.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            form.requestSubmit();
+          }
+        });
+
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const value = textarea.value.trim();
+          if (!value) return;
+          const formData = new FormData(form);
+          const response = await fetch(form.action || window.location.pathname, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: formData,
+          });
+          if (!response.ok) return;
+          const data = await response.json();
+          if (data.ok && data.message) {
+            appendMessage(data.message);
+            textarea.value = "";
+            textarea.focus();
+          }
+        });
+      }
+
+      async function poll() {
+        const response = await fetch(pollUrl + "?after_id=" + encodeURIComponent(String(lastId)), {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!data.ok || !data.messages) return;
+        for (const msg of data.messages) {
+          appendMessage(msg);
+        }
+      }
+
+      setInterval(poll, 3000);
+    })();
+  </script>
+{% endblock %}
+
