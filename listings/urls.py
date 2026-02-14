@@ -20,6 +20,7 @@ urlpatterns = [
     path("cabinet/messages/", views.messages_list, name="messages_list"),
     path("cabinet/messages/<int:thread_id>/", views.chat_detail, name="chat_detail"),
     path("api/chat/<int:thread_id>/messages/", views.chat_messages_api, name="chat_messages_api"),
+    path("api/message-toasts/", views.message_toasts_api, name="message_toasts_api"),
     path("favorite/<int:pk>/toggle/", views.favorite_toggle, name="favorite_toggle"),
     path("listing/<int:pk>/message/", views.send_message, name="send_message"),
     path("listing/<int:pk>/report/", views.report_listing, name="report_listing"),

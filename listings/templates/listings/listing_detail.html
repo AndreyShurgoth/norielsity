@@ -1,6 +1,7 @@
-﻿{% extends "listings/base.html" %}`r`n{% load listings_extras %}
+{% extends "listings/base.html" %}
+{% load listings_extras %}
 
-{% block title %}{{ listing.title }} — NoRielSity{% endblock %}
+{% block title %}{{ listing.title }} - NoRielSity{% endblock %}
 
 {% block content %}
   <style>
@@ -236,15 +237,16 @@
   </style>
 
   <article class="card">
-    <a class="action-primary" href="{% url 'listings:listing_list' %}">← Назад до списку</a>
+    <a class="action-primary" href="{% url 'listings:listing_list' %}">< Назад до списку</a>
     <h2>{{ listing.title }}</h2>
     <p class="price">{{ listing.price_per_month }} грн / місяць</p>
+    <p class="meta" style="margin-top: -6px;">Дата публікації: {{ listing.created_at|date:"d.m.Y H:i" }}</p>
     <p class="meta">
       {{ listing.address }} · кімнат: {{ listing.get_rooms_display }}
       {% if listing.floor %}
         · поверх: {{ listing.floor }}{% if listing.total_floors %} з {{ listing.total_floors }}{% endif %}
       {% endif %}
-      {% if listing.area_sqm %}· {{ listing.area_sqm }} м²{% endif %}
+      {% if listing.area_sqm %}· {{ listing.area_sqm }} м?{% endif %}
       {% if listing.heating %}· {{ listing.get_heating_display }}{% endif %}
       {% if listing.pets %}· {{ listing.get_pets_display }}{% endif %}
       {% if request.user == listing.owner %}
@@ -302,7 +304,7 @@
               <div class="message-modal" id="message-modal">
                 <div class="message-head">
                   <span>Повідомлення автору</span>
-                  <button class="message-close" id="close-message-modal" type="button">✕</button>
+                  <button class="message-close" id="close-message-modal" type="button">×</button>
                 </div>
                 {% if request.user.is_authenticated %}
                   <form method="post" action="{% url 'listings:send_message' listing.pk %}" id="message-form">
@@ -340,9 +342,7 @@
               <form method="post" action="{% url 'listings:favorite_toggle' listing.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-                <button class="action-primary" type="submit" aria-label="Обране">
-                  {% if is_favorite %}♥{% else %}♡{% endif %}
-                </button>
+                <button class="action-primary contact-main-btn" type="submit">{% if is_favorite %}Видалити збережене{% else %}Зберегти{% endif %}</button>
               </form>
               {% if request.user != listing.owner %}
                 <a class="action-primary contact-main-btn" href="{% url 'listings:report_listing' listing.pk %}">
@@ -350,7 +350,7 @@
                 </a>
               {% endif %}
             {% else %}
-              <a class="action-primary" href="{% url 'login' %}?next={{ request.get_full_path }}" aria-label="Обране">♡</a>
+              <a class="action-primary contact-main-btn" href="{% url 'login' %}?next={{ request.get_full_path }}">Зберегти</a>
               <a class="action-primary contact-main-btn" href="{% url 'login' %}?next={% url 'listings:report_listing' listing.pk %}">
                 Поскаржитися на оголошення
               </a>
@@ -366,10 +366,10 @@
   </article>
 
   <div class="lightbox" id="lightbox">
-    <button class="lightbox-btn" id="lightbox-close">Закрити ✕</button>
+    <button class="lightbox-btn" id="lightbox-close">Закрити ?</button>
     <div class="lightbox-nav">
-      <button id="lightbox-prev">←</button>
-      <button id="lightbox-next">→</button>
+      <button id="lightbox-prev"><</button>
+      <button id="lightbox-next">></button>
     </div>
     <img id="lightbox-image" src="" alt="Фото" />
   </div>
@@ -553,4 +553,3 @@
     })();
   </script>
 {% endblock %}
-

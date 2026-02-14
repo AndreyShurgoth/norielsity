@@ -86,6 +86,7 @@ def listing_list(request):
     )
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
+    sort = request.GET.get("sort")
     rooms = request.GET.get("rooms")
     floor = request.GET.get("floor")
     pets = request.GET.get("pets")
@@ -104,6 +105,14 @@ def listing_list(request):
     if heating:
         listings = listings.filter(heating=heating)
 
+    sort_mapping = {
+        "price_desc": "-price_per_month",
+        "price_asc": "price_per_month",
+        "date_new": "-created_at",
+        "date_old": "created_at",
+    }
+    listings = listings.order_by(sort_mapping.get(sort, "-created_at"))
+
     rooms_labels = dict(Listing.ROOMS_CHOICES)
     pets_labels = dict(Listing.PETS_CHOICES)
     heating_labels = dict(Listing.HEATING_CHOICES)
@@ -111,6 +120,7 @@ def listing_list(request):
     params = {
         "min_price": min_price or "",
         "max_price": max_price or "",
+        "sort": sort or "",
         "rooms": rooms or "",
         "floor": floor or "",
         "pets": pets or "",
@@ -138,6 +148,7 @@ def listing_list(request):
         "heating_label": heating_labels.get(heating, ""),
         "qs_without_min_price": build_qs("min_price"),
         "qs_without_max_price": build_qs("max_price"),
+        "qs_without_sort": build_qs("sort"),
         "qs_without_rooms": build_qs("rooms"),
         "qs_without_floor": build_qs("floor"),
         "qs_without_pets": build_qs("pets"),
@@ -578,3 +589,26 @@ def chat_messages_api(request, thread_id: int):
     ).update(is_read=True)
 
     return JsonResponse({"ok": True, "messages": messages_data})
+
+
+@login_required
+def message_toasts_api(request):
+    try:
+        after_id = int(request.GET.get("after_id", "0") or 0)
+    except ValueError:
+        after_id = 0
+
+    incoming = (
+        ChatMessage.objects.filter(recipient=request.user, id__gt=after_id)
+        .select_related("sender")
+        .order_by("id")[:20]
+    )
+    payload = [
+        {
+            "id": msg.id,
+            "sender_username": msg.sender.username,
+            "chat_url": reverse("listings:chat_detail", kwargs={"thread_id": msg.thread_id}),
+        }
+        for msg in incoming
+    ]
+    return JsonResponse({"ok": True, "messages": payload})

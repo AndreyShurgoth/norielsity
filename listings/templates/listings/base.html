@@ -33,11 +33,19 @@
         background: var(--bg);
         color: var(--ink);
       }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       html {
-        background: var(--surface);
+        background: var(--bg);
       }
       header {
-        padding: 0 16px 10px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        padding: 10px 16px 10px;
         border-bottom: 1px solid var(--border);
         background: var(--surface);
         margin: 0 !important;
@@ -78,8 +86,8 @@
       }
       main {
         max-width: 960px;
-        margin: 24px auto 48px;
-        padding: 0 16px;
+        margin: 0 auto 48px;
+        padding: 24px 16px 0;
       }
       .card {
         background: var(--card);
@@ -155,6 +163,9 @@
         padding: 10px 12px;
         background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
         box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+      }
+      .toast.clickable {
+        cursor: pointer;
       }
       .toast.success {
         border-color: color-mix(in srgb, #2f7f76 45%, var(--border) 55%);
@@ -289,17 +300,53 @@
         });
       })();
 
+      function getToastStack() {
+        let stack = document.getElementById("toast-stack");
+        if (!stack) {
+          stack = document.createElement("div");
+          stack.id = "toast-stack";
+          stack.className = "toast-stack";
+          stack.setAttribute("aria-live", "polite");
+          stack.setAttribute("aria-atomic", "true");
+          document.body.appendChild(stack);
+        }
+        return stack;
+      }
+
+      function closeToast(toast) {
+        const stack = document.getElementById("toast-stack");
+        if (!stack) return;
+        toast.remove();
+        if (!stack.children.length) {
+          stack.remove();
+        }
+      }
+
+      function pushToast(messageText, tone, navigateUrl) {
+        const stack = getToastStack();
+        const toast = document.createElement("div");
+        toast.className = "toast" + (tone ? " " + tone : "") + (navigateUrl ? " clickable" : "");
+        toast.setAttribute("role", "status");
+        toast.innerHTML =
+          "<span></span><button class='toast-close' type='button' aria-label='Закрити'>×</button>";
+        toast.querySelector("span").textContent = messageText;
+        const closeBtn = toast.querySelector(".toast-close");
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeToast(toast);
+        });
+        if (navigateUrl) {
+          toast.addEventListener("click", () => {
+            window.location.href = navigateUrl;
+          });
+        }
+        stack.appendChild(toast);
+        setTimeout(() => closeToast(toast), 10000);
+      }
+
       (function () {
         const stack = document.getElementById("toast-stack");
         if (!stack) return;
-
-        function closeToast(toast) {
-          toast.remove();
-          if (!stack.children.length) {
-            stack.remove();
-          }
-        }
-
         const toasts = Array.from(stack.querySelectorAll(".toast"));
         toasts.forEach((toast) => {
           const closeBtn = toast.querySelector(".toast-close");
@@ -308,6 +355,42 @@
           }
           setTimeout(() => closeToast(toast), 10000);
         });
+      })();
+
+      (function () {
+        {% if request.user.is_authenticated %}
+          const userId = "{{ request.user.id }}";
+          const storageKey = "norielsity:last_toast_message_id:" + userId;
+          const initialFromServer = Number("{{ latest_received_message_id|default:0 }}") || 0;
+          const initialFromStorage = Number(localStorage.getItem(storageKey) || "0") || 0;
+          let lastSeenId = Math.max(initialFromServer, initialFromStorage);
+          localStorage.setItem(storageKey, String(lastSeenId));
+
+          async function pollMessageToasts() {
+            const response = await fetch(
+              "{% url 'listings:message_toasts_api' %}?after_id=" +
+                encodeURIComponent(String(lastSeenId)),
+              { headers: { "X-Requested-With": "XMLHttpRequest" } }
+            );
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.ok || !Array.isArray(data.messages)) return;
+
+            for (const msg of data.messages) {
+              if (typeof msg.id !== "number") continue;
+              lastSeenId = Math.max(lastSeenId, msg.id);
+              const sender = msg.sender_username || "user";
+              pushToast(
+                "Нове повідомлення від " + sender + "!",
+                "success",
+                msg.chat_url || null
+              );
+            }
+            localStorage.setItem(storageKey, String(lastSeenId));
+          }
+
+          setInterval(pollMessageToasts, 5000);
+        {% endif %}
       })();
     </script>
   </body>

@@ -8,6 +8,7 @@
       display: grid;
       gap: 14px;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin: 0;
       background: linear-gradient(180deg, #fff8f0 0%, #f4eee3 100%);
       border: 1px solid var(--border);
       border-radius: 16px;
@@ -92,8 +93,29 @@
     .card-title {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
+    }
+    .card-title h2 {
+      flex: 1;
+      min-width: 0;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      min-height: 2.5em;
+      margin: 0;
+    }
+    .card-title h2 a {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
+    }
+    .card-title form,
+    .card-title > a.fav-btn-small {
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin: 0;
     }
     .fav-btn-small {
       width: 34px;
@@ -127,6 +149,15 @@
     <div>
       <label for="max_price">Ціна до</label>
       <input id="max_price" name="max_price" type="number" value="{{ filters.max_price }}" />
+    </div>
+    <div>
+      <label for="sort">Сортування</label>
+      <select id="sort" name="sort">
+        <option value="">Дата: найновіші</option>
+        <option value="date_old"{% if filters.sort == "date_old" %} selected{% endif %}>Дата: найстаріші</option>
+        <option value="price_desc"{% if filters.sort == "price_desc" %} selected{% endif %}>Ціна: від більшої</option>
+        <option value="price_asc"{% if filters.sort == "price_asc" %} selected{% endif %}>Ціна: від меншої</option>
+      </select>
     </div>
     <div>
       <label for="rooms">Кімнати</label>
@@ -170,13 +201,24 @@
     </div>
   </form>
 
-  {% if filters.min_price or filters.max_price or filters.rooms or filters.floor or filters.pets or filters.heating %}
+  {% if filters.min_price or filters.max_price or filters.sort or filters.rooms or filters.floor or filters.pets or filters.heating %}
     <div class="active-filters">
       {% if filters.min_price %}
         <a class="filter-chip" href="?{{ qs_without_min_price }}">Ціна від: {{ filters.min_price }} ✕</a>
       {% endif %}
       {% if filters.max_price %}
         <a class="filter-chip" href="?{{ qs_without_max_price }}">Ціна до: {{ filters.max_price }} ✕</a>
+      {% endif %}
+      {% if filters.sort %}
+        <a class="filter-chip" href="?{{ qs_without_sort }}">
+          Сортування:
+          {% if filters.sort == "date_old" %} дата найстаріші
+          {% elif filters.sort == "price_desc" %} ціна від більшої
+          {% elif filters.sort == "price_asc" %} ціна від меншої
+          {% else %} дата найновіші
+          {% endif %}
+          ✕
+        </a>
       {% endif %}
       {% if filters.rooms %}
         <a class="filter-chip" href="?{{ qs_without_rooms }}">Кімнати: {{ rooms_label }} ✕</a>
@@ -214,7 +256,7 @@
           <div class="card-title">
             <h2 style="margin: 0;">
               <a href="{% url 'listings:listing_detail' listing.pk %}">
-                {{ listing.title }}
+                {{ listing.title|truncatechars:50 }}
               </a>
             </h2>
             {% if request.user.is_authenticated %}

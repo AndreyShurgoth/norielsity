@@ -31,8 +31,17 @@
         background: var(--bg);
         color: var(--ink);
       }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       header {
-        padding: 20px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        padding: 10px 16px;
+        padding-top: calc(10px + env(safe-area-inset-top));
         border-bottom: 1px solid var(--border);
         background: color-mix(in srgb, var(--bg) 70%, var(--panel) 30%);
       }
@@ -48,8 +57,8 @@
       }
       main {
         max-width: 980px;
-        margin: 24px auto 56px;
-        padding: 0 16px;
+        margin: 0 auto 56px;
+        padding: 24px 16px 0;
       }
       .panel {
         background: var(--panel);
@@ -64,6 +73,15 @@
         gap: 12px;
         align-items: center;
         justify-content: space-between;
+      }
+      .header-title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .header-title p {
+        margin: 0;
       }
       .btn {
         display: inline-block;
@@ -171,16 +189,16 @@
   <body>
     <header>
       <div class="row">
-        <div>
+        <div class="header-title">
           <h1>Кабінет користувача</h1>
           <p>Керування оголошеннями</p>
         </div>
         <div class="actions">
-          <button class="theme-toggle" id="theme-toggle" type="button">Тема: світла</button>
           <a class="btn secondary" href="{% url 'listings:notifications_list' %}">Сповіщення</a>
           <a class="btn secondary" href="{% url 'listings:messages_list' %}">Повідомлення</a>
           <a class="btn secondary" href="{% url 'listings:profile_edit' %}">Профіль</a>
-          <a class="btn secondary" href="{% url 'listings:listing_list' %}">На сайт</a>
+          <a class="btn secondary" href="{% url 'listings:listing_list' %}">Головна</a>
+          <button class="theme-toggle" id="theme-toggle" type="button">Тема: світла</button>
           <a class="btn secondary" href="{% url 'logout' %}">Вийти</a>
         </div>
       </div>
