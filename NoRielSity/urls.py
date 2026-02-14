@@ -57,13 +57,9 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
-    path(
-        "accounts/activate/<uidb64>/<token>/",
-        listing_views.activate_account,
-        name="activate_account",
-    ),
-    path('', include('listings.urls')),
+    path("", include("listings.urls")),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

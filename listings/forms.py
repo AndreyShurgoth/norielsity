@@ -88,7 +88,7 @@ class LoginForm(AuthenticationForm):
         "invalid_login": _(
             "Невірний логін або пароль. Перевірте введені дані та спробуйте ще раз."
         ),
-        "inactive": _("Цей акаунт ще не активований через email."),
+        "inactive": _("This account is disabled."),
     }
 
 
@@ -147,3 +147,4 @@ class ListingReportForm(forms.ModelForm):
                 }
             )
         }
+

@@ -1,16 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.tokens import default_token_generator
 from django.core.cache import cache
-from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from .forms import ListingForm, ListingReportForm, LoginForm, ProfileForm, SignUpForm
@@ -229,54 +225,13 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
+            user = form.save()
             Profile.objects.get_or_create(user=user)
-            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            activation_url = request.build_absolute_uri(
-                reverse("activate_account", kwargs={"uidb64": uidb64, "token": token})
-            )
-            send_mail(
-                subject="NoRielSity account activation",
-                message=(
-                    "Hello!\n\n"
-                    "Activate your account by visiting this link:\n"
-                    f"{activation_url}\n\n"
-                    "If you did not create this account, ignore this email."
-                ),
-                from_email=None,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-            return render(
-                request,
-                "registration/activation_sent.html",
-                {"email": user.email},
-            )
+            messages.success(request, "Account created. Please sign in.")
+            return redirect("login")
     else:
         form = SignUpForm()
     return render(request, "listings/signup.html", {"form": form})
-
-
-def activate_account(request, uidb64: str, token: str):
-    User = get_user_model()
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user and default_token_generator.check_token(user, token):
-        if not user.is_active:
-            user.is_active = True
-            user.save(update_fields=["is_active"])
-        messages.success(request, "Акаунт активовано. Тепер можна увійти.")
-        return redirect("login")
-
-    return render(request, "registration/activation_invalid.html", status=400)
-
 
 def login_view(request):
     username = (request.POST.get("username") or "").strip()
